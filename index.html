@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MedAI – Prescription Analyzer</title>
+<meta name="description" content="AI-powered prescription analysis in English and Telugu">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+/* ============================================================
+   SECTION: CSS Variables & Reset
+   ============================================================ */
+:root {
+  --primary:        #2563EB;
+  --primary-dark:   #1D4ED8;
+  --primary-light:  #EFF6FF;
+  --secondary:      #06B6D4;
+  --accent:         #0EA5E9;
+  --bg:             #F8FAFC;
+  --surface:        #FFFFFF;
+  --text-primary:   #0F172A;
+  --text-secondary: #64748B;
+  --border:         #E2E8F0;
+  --success:        #10B981;
+  --warning:        #F59E0B;
+  --danger:         #EF4444;
+  --shadow-sm:      0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md:      0 4px 16px rgba(0,0,0,0.10);
+  --shadow-lg:      0 8px 32px rgba(0,0,0,0.12);
+  --radius-sm:      8px;
+  --radius-md:      12px;
+  --radius-lg:      16px;
+  --radius-xl:      24px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  background: #CBD5E1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: var(--text-primary);
+}
+
+button  { font-family: 'Inter', sans-serif; cursor: pointer; border: none; background: none; }
+input   { font-family: 'Inter', sans-serif; }
+img     { display: block; }
+a       { text-decoration: none; }
+
+/* ============================================================
+   SECTION: App Shell
+   ============================================================ */
+.app-shell {
+  width: 420px;
+  max-width: 100vw;
+  height: 100vh;
+  max-height: 900px;
+  background: var(--surface);
+  border-radius: 32px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+@media (max-width: 440px) {
+  body { background: var(--surface); align-items: flex-start; }
+  .app-shell { border-radius: 0; max-height: 100vh; width: 100%; }
+}
+
+/* ============================================================
+   SECTION: Top App Bar
+   ============================================================ */
+.app-bar {
+  height: 60px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+  z-index: 20;
+  position: relative;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+.logo svg { width: 22px; height: 22px; color: var(--primary); }
+
+.lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1.5px solid var(--primary);
+  border-radius: 20px;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 500;
+  background: transparent;
+  transition: background 0.2s, color 0.2s;
+  min-width: 56px;
+  justify-content: center;
+}
+.lang-btn:hover { background: var(--primary-light); }
+.lang-btn.loading { opacity: 0.7; pointer-events: none; }
+.lang-spinner {
+  width: 12px; height: 12px;
+  border: 1.5px solid var(--primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: none;
+}
+.lang-btn.loading .lang-spinner { display: inline-block; }
+.lang-btn.loading .lang-label   { display: none; }
+
+/* ============================================================
+   SECTION: Scrollable Content Area
+   ============================================================ */
+.page-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+}
+.page-area::-webkit-scrollbar { width: 3px; }
+.page-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ============================================================
+   SECTION: Pages
+   ============================================================ */
+.page {
+  display: none;
+  padding: 20px 16px 24px;
+  min-height: 100%;
+  animation: pageIn 250ms ease both;
+}
+.page.active { display: block; }
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   SECTION: Bottom Navigation
+   ============================================================ */
+.bottom-nav {
+  height: 64px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  background: var(--surface);
+  flex-shrink: 0;
+  z-index: 20;
+}
+
+.nav-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s;
+  background: none;
+  border: none;
+}
+.nav-tab.active { color: var(--primary); }
+
+.nav-pill-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  transition: background 0.2s ease;
+}
+.nav-tab.active .nav-pill-wrap { background: var(--primary-light); }
+.nav-tab svg { width: 20px; height: 20px; }
+
+/* ============================================================
+   SECTION: Auth Modal (Login / Signup)
+   ============================================================ */
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: flex-end;
+  z-index: 100;
+  border-radius: 32px;
+  overflow: hidden;
+}
+
+.modal-sheet {
+  width: 100%;
+  background: var(--surface);
+  border-radius: 28px 28px 32px 32px;
+  padding: 12px 20px 32px;
+  animation: sheetUp 300ms ease both;
+}
+
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.modal-drag-bar {
+  width: 40px; height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+
+.modal-icon {
+  width: 52px; height: 52px;
+  background: var(--primary-light);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--primary);
+  margin: 0 auto 12px;
+}
+.modal-icon svg { width: 26px; height: 26px; }
+
+.modal-title { font-size: 20px; font-weight: 500; text-align: center; }
+.modal-sub   { font-size: 14px; color: var(--text-secondary); text-align: center; margin-bottom: 20px; }
+
+.tab-row {
+  display: flex;
+  gap: 4px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  margin-bottom: 20px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  text-align: center;
+}
+.tab-btn.active {
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.field { margin-bottom: 14px; }
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.field input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  color: var(--text-primary);
+  background: var(--surface);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.field input:focus { border-color: var(--primary); }
+
+.modal-cta {
+  width: 100%;
+  height: 50px;
+  background: var(--primary);
+  color: white;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.2s;
+  margin-top: 4px;
+}
+.modal-cta:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.modal-cta:active { transform: scale(0.97); }
+
+/* ============================================================
+   SECTION: Home Page
+   ============================================================ */
+.greeting { margin-bottom: 20px; }
+.greeting h2 { font-size: 20px; font-weight: 500; }
+.greeting p  { font-size: 14px; color: var(--text-secondary); margin-top: 2px; }
+
+/* API Key Banner */
+.key-banner {
+  background: #FFF7ED;
+  border: 1px solid #FED7AA;
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+.key-banner label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #92400E;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.key-banner input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #FED7AA;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  background: white;
+  color: var(--text-primary);
+  outline: none;
+}
+.key-banner input:focus { border-color: var(--primary); }
+
+/* Upload Zone */
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--primary-light);
+  padding: 36px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+  margin-bottom: 12px;
+  user-select: none;
+}
+.upload-zone:hover,
+.upload-zone.drag-over {
+  border-color: var(--primary);
+  background: #DBEAFE;
+}
+.upload-zone.drag-over { transform: scale(1.01); }
+.upload-zone svg     { color: var(--primary); margin: 0 auto 12px; display: block; }
+.upload-zone .uz-title { font-size: 15px; font-weight: 500; color: var(--text-primary); margin-bottom: 4px; }
+.upload-zone .uz-sub   { font-size: 12px; color: var(--text-secondary); }
+
+.camera-btn {
+  width: 100%;
+  padding: 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+  margin-bottom: 16px;
+}
+.camera-btn svg { width: 18px; height: 18px; }
+.camera-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+/* Preview */
+.preview-wrap { display: none; margin-bottom: 16px; }
+.preview-wrap.show { display: block; }
+.preview-img-el {
+  width: 100%;
+  max-height: 210px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+.preview-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 0 2px;
+}
+.preview-meta-row span { font-size: 13px; color: var(--text-secondary); }
+.remove-link { font-size: 13px; color: var(--danger); font-weight: 500; cursor: pointer; }
+.remove-link:hover { text-decoration: underline; }
+
+/* Analyze Button */
+.analyze-btn {
+  width: 100%;
+  height: 52px;
+  background: var(--primary);
+  color: white;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
+}
+.analyze-btn svg { width: 20px; height: 20px; }
+.analyze-btn:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.analyze-btn:active { transform: scale(0.97); }
+.analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ============================================================
+   SECTION: Scan / Loading Page
+   ============================================================ */
+.scan-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 48px;
+}
+
+/* Triple-ring pulse */
+.pulse-wrap {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pulse-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  opacity: 0;
+  animation: ringOut 2s ease-out infinite;
+}
+.pulse-ring:nth-child(2) { animation-delay: 0.5s; }
+.pulse-ring:nth-child(3) { animation-delay: 1s; }
+
+@keyframes ringOut {
+  0%   { transform: scale(0.7); opacity: 0.8; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+.pulse-core {
+  width: 72px; height: 72px;
+  background: var(--primary-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  animation: corePulse 1.4s ease-in-out infinite;
+  z-index: 1;
+}
+.pulse-core svg { width: 32px; height: 32px; }
+@keyframes corePulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.1); }
+}
+
+.scan-title { font-size: 18px; font-weight: 500; text-align: center; }
+.scan-sub   { font-size: 13px; color: var(--text-secondary); text-align: center; margin-top: 6px; margin-bottom: 32px; }
+
+/* Shimmer Skeleton */
+.skeleton-card {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.sk {
+  height: 13px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.5s infinite linear;
+  margin-bottom: 10px;
+}
+.sk:last-child { margin-bottom: 0; }
+.sk.w60 { width: 60%; }
+.sk.w40 { width: 40%; }
+.sk.w80 { width: 80%; }
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+/* ============================================================
+   SECTION: Results Page
+   ============================================================ */
+.results-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.results-topbar h2 { font-size: 18px; font-weight: 500; }
+
+.new-scan-btn {
+  padding: 7px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+.new-scan-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+/* Success Banner */
+.success-banner {
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #065F46;
+  font-weight: 500;
+  margin-bottom: 16px;
+  animation: slideDown 300ms ease both;
+}
+.success-banner svg { color: var(--success); width: 20px; height: 20px; flex-shrink: 0; }
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Medicine Card */
+.med-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.med-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+.med-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.med-icon {
+  width: 38px; height: 38px;
+  background: var(--primary-light);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+.med-icon svg { width: 18px; height: 18px; }
+
+.med-name    { font-size: 16px; font-weight: 500; color: var(--text-primary); line-height: 1.3; }
+.med-generic { font-size: 13px; color: var(--text-secondary); margin-top: 1px; }
+
+.badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.badge-dose {
+  background: #EFF6FF; color: #1D4ED8;
+  border-radius: 6px; padding: 3px 10px;
+  font-size: 12px; font-weight: 500;
+}
+.badge-time {
+  background: #F0FDF4; color: #15803D;
+  border-radius: 6px; padding: 3px 10px;
+  font-size: 12px; font-weight: 500;
+}
+
+.med-field { margin-bottom: 8px; }
+.field-label {
+  font-size: 11px; font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 2px;
+}
+.field-value { font-size: 14px; color: var(--text-primary); line-height: 1.55; }
+
+.warn-box {
+  display: flex;
+  gap: 8px;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  margin-top: 8px;
+}
+.warn-box svg { width: 14px; height: 14px; color: var(--warning); flex-shrink: 0; margin-top: 3px; }
+.warn-box span { font-size: 13px; color: #78350F; line-height: 1.5; }
+
+/* Error Card */
+.err-card {
+  background: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.err-card h4 { color: var(--danger); font-weight: 500; font-size: 15px; display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
+.err-card h4 svg { width: 16px; height: 16px; }
+.err-card p  { font-size: 13px; color: #7F1D1D; margin-bottom: 12px; line-height: 1.5; }
+.retry-btn {
+  padding: 8px 18px;
+  background: var(--danger);
+  color: white;
+  border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 500;
+  transition: background 0.2s;
+}
+.retry-btn:hover { background: #DC2626; }
+
+/* ============================================================
+   SECTION: History Page
+   ============================================================ */
+.hist-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.hist-header h2 { font-size: 18px; font-weight: 500; }
+.count-pill {
+  background: var(--primary-light); color: var(--primary);
+  border-radius: 20px; padding: 3px 12px;
+  font-size: 12px; font-weight: 500;
+}
+
+.hist-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.hist-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+
+.hist-thumb {
+  width: 56px; height: 56px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.hist-thumb-ph {
+  width: 56px; height: 56px;
+  border-radius: var(--radius-sm);
+  background: var(--primary-light);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+.hist-thumb-ph svg { width: 24px; height: 24px; }
+
+.hist-info { flex: 1; min-width: 0; }
+.hist-date  { font-size: 12px; color: var(--text-secondary); margin-bottom: 2px; }
+.hist-meds  { font-size: 15px; font-weight: 500; }
+
+.hist-del {
+  width: 34px; height: 34px;
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--danger);
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.hist-del:hover { background: #FEF2F2; }
+.hist-del svg { width: 16px; height: 16px; }
+
+.empty-state {
+  text-align: center;
+  padding: 64px 20px;
+}
+.empty-state svg  { color: var(--border); margin: 0 auto 16px; display: block; }
+.empty-state h4   { font-size: 16px; font-weight: 500; margin-bottom: 6px; }
+.empty-state p    { font-size: 14px; color: var(--text-secondary); }
+
+/* ============================================================
+   SECTION: Profile Page
+   ============================================================ */
+.profile-hero {
+  text-align: center;
+  padding-top: 8px;
+  margin-bottom: 24px;
+}
+.profile-avatar {
+  width: 76px; height: 76px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--primary);
+  margin: 0 auto 12px;
+  border: 3px solid white;
+  box-shadow: var(--shadow-md);
+}
+.profile-avatar svg { width: 34px; height: 34px; }
+.profile-name  { font-size: 19px; font-weight: 500; }
+.profile-email { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+
+.prof-section { margin-bottom: 20px; }
+.prof-section-label {
+  font-size: 11px; font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0 4px;
+  margin-bottom: 8px;
+}
+.prof-row {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.prof-row:hover { background: var(--bg); }
+.prof-row-left  { display: flex; align-items: center; gap: 12px; font-size: 15px; }
+.prof-row-left svg { width: 18px; height: 18px; color: var(--primary); }
+.prof-row-right { font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
+.prof-row-right svg { width: 14px; height: 14px; }
+
+.logout-btn {
+  width: 100%;
+  padding: 14px;
+  background: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  border-radius: var(--radius-md);
+  color: var(--danger);
+  font-size: 15px; font-weight: 500;
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px;
+  transition: background 0.2s;
+  margin-top: 4px;
+}
+.logout-btn:hover { background: #FEE2E2; }
+.logout-btn svg { width: 16px; height: 16px; }
+
+/* ============================================================
+   SECTION: Keyframes & Utilities
+   ============================================================ */
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.hidden { display: none !important; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+
+<body>
+<!-- SECTION: App Shell -->
+<div class="app-shell" id="appShell">
+
+  <!-- SECTION: Auth Modal -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal-sheet">
+      <div class="modal-drag-bar"></div>
+      <div class="modal-icon"><i data-lucide="pill"></i></div>
+      <p class="modal-title">Welcome to MedAI</p>
+      <p class="modal-sub">AI-powered prescription analysis</p>
+
+      <div class="tab-row">
+        <button class="tab-btn active" id="tabLogin"  onclick="switchAuthTab('login')">Login</button>
+        <button class="tab-btn"        id="tabSignup" onclick="switchAuthTab('signup')">Sign Up</button>
+      </div>
+
+      <form id="authForm" onsubmit="handleAuth(event)">
+        <div class="field hidden" id="nameField">
+          <label>Full Name</label>
+          <input type="text" id="inpName" placeholder="Your name">
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="inpEmail" placeholder="you@email.com" required>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="inpPass" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="modal-cta" id="authCta">Login</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SECTION: Top App Bar -->
+  <header class="app-bar">
+    <div class="logo">
+      <i data-lucide="pill"></i>
+      MedAI
+    </div>
+    <button class="lang-btn" id="langBtn" onclick="toggleLanguage()">
+      <span class="lang-label" id="langLabel">EN</span>
+      <span class="lang-spinner"></span>
+    </button>
+  </header>
+
+  <!-- SECTION: Page Area -->
+  <div class="page-area">
+
+    <!-- HOME PAGE -->
+    <div class="page active" id="pageHome">
+      <div class="greeting">
+        <h2 id="greetingText">Good morning, User 👋</h2>
+        <p>Upload a prescription to get started</p>
+      </div>
+
+      <div class="key-banner">
+        <label><i data-lucide="key" style="width:13px;height:13px;display:inline;"></i> Anthropic API Key</label>
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-..." oninput="onApiKeyInput()">
+      </div>
+
+      <!-- Upload Zone (drag & drop) -->
+      <div class="upload-zone" id="uploadZone"
+           onclick="document.getElementById('fileInput').click()"
+           ondragover="onDragOver(event)"
+           ondragleave="onDragLeave(event)"
+           ondrop="onDrop(event)">
+        <i data-lucide="upload-cloud" style="width:52px;height:52px;"></i>
+        <p class="uz-title">Tap to upload prescription</p>
+        <p class="uz-sub">JPG, PNG, PDF — or drag & drop here</p>
+        <input type="file" id="fileInput" accept="image/*,.pdf" style="display:none" onchange="handleFileUpload(event)">
+      </div>
+
+      <button class="camera-btn" onclick="document.getElementById('camInput').click()">
+        <i data-lucide="camera"></i>
+        Use Camera
+        <input type="file" id="camInput" accept="image/*" capture="environment" style="display:none" onchange="handleFileUpload(event)">
+      </button>
+
+      <!-- Image Preview -->
+      <div class="preview-wrap" id="previewWrap">
+        <img id="previewImg" class="preview-img-el" src="" alt="Prescription preview">
+        <div class="preview-meta-row">
+          <span id="previewMeta">—</span>
+          <span class="remove-link" onclick="removeFile()">Remove</span>
+        </div>
+      </div>
+
+      <button class="analyze-btn" id="analyzeBtn" onclick="analyzeImage()" disabled>
+        <i data-lucide="scan-line"></i>
+        Analyze Prescription
+      </button>
+    </div>
+
+    <!-- SCAN / LOADING PAGE -->
+    <div class="page" id="pageScan">
+      <div class="scan-inner">
+        <div class="pulse-wrap">
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring"></div>
+          <div class="pulse-core">
+            <i data-lucide="stethoscope"></i>
+          </div>
+        </div>
+        <p class="scan-title">Analyzing prescription…</p>
+        <p class="scan-sub">This usually takes 5–10 seconds</p>
+        <div style="width:100%;">
+          <div class="skeleton-card">
+            <div class="sk w60"></div>
+            <div class="sk w40"></div>
+            <div class="sk"></div>
+            <div class="sk w80"></div>
+          </div>
+          <div class="skeleton-card">
+            <div class="sk w60"></div>
+            <div class="sk w40"></div>
+            <div class="sk"></div>
+          </div>
+          <div class="skeleton-card">
+            <div class="sk w40"></div>
+            <div class="sk w80"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS PAGE -->
+    <div class="page" id="pageResults">
+      <div class="results-topbar">
+        <h2>Results</h2>
+        <button class="new-scan-btn" onclick="startNewScan()">+ New Scan</button>
+      </div>
+      <div id="resultsContent"></div>
+    </div>
+
+    <!-- HISTORY PAGE -->
+    <div class="page" id="pageHistory">
+      <div class="hist-header">
+        <h2>Previous Scans</h2>
+        <span class="count-pill" id="histCount">0 scans</span>
+      </div>
+      <div id="histList"></div>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div class="page" id="pageProfile">
+      <div class="profile-hero">
+        <div class="profile-avatar"><i data-lucide="user"></i></div>
+        <p class="profile-name"  id="profileName">User</p>
+        <p class="profile-email" id="profileEmail">—</p>
+      </div>
+
+      <div class="prof-section">
+        <div class="prof-section-label">App Settings</div>
+        <div class="prof-row" onclick="toggleLanguage()">
+          <div class="prof-row-left"><i data-lucide="globe"></i> Language</div>
+          <div class="prof-row-right" id="profileLang">English <i data-lucide="chevron-right"></i></div>
+        </div>
+        <div class="prof-row">
+          <div class="prof-row-left"><i data-lucide="bell"></i> Notifications</div>
+          <div class="prof-row-right">Off <i data-lucide="chevron-right"></i></div>
+        </div>
+        <div class="prof-row">
+          <div class="prof-row-left"><i data-lucide="shield"></i> Privacy</div>
+          <div class="prof-row-right"><i data-lucide="chevron-right"></i></div>
+        </div>
+      </div>
+
+      <div class="prof-section">
+        <div class="prof-section-label">History</div>
+        <div class="prof-row" onclick="goHistory()">
+          <div class="prof-row-left"><i data-lucide="clock"></i> View All Scans</div>
+          <div class="prof-row-right" id="profileScanCount">0 scans <i data-lucide="chevron-right"></i></div>
+        </div>
+        <div class="prof-row" onclick="clearHistory()">
+          <div class="prof-row-left" style="color:var(--danger)"><i data-lucide="trash-2" style="color:var(--danger)"></i> Clear All History</div>
+          <div class="prof-row-right"><i data-lucide="chevron-right"></i></div>
+        </div>
+      </div>
+
+      <div class="prof-section">
+        <div class="prof-section-label">About</div>
+        <div class="prof-row">
+          <div class="prof-row-left"><i data-lucide="info"></i> Version</div>
+          <div class="prof-row-right">1.0.0</div>
+        </div>
+      </div>
+
+      <button class="logout-btn" onclick="logout()">
+        <i data-lucide="log-out"></i>
+        Log Out
+      </button>
+    </div>
+
+  </div><!-- /page-area -->
+
+  <!-- SECTION: Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button class="nav-tab active" id="navHome"    onclick="switchPage('home')">
+      <div class="nav-pill-wrap"><i data-lucide="home"></i><span>Home</span></div>
+    </button>
+    <button class="nav-tab" id="navResults"  onclick="switchPage('results')">
+      <div class="nav-pill-wrap"><i data-lucide="scan-line"></i><span>Scan</span></div>
+    </button>
+    <button class="nav-tab" id="navHistory"  onclick="switchPage('history')">
+      <div class="nav-pill-wrap"><i data-lucide="clock"></i><span>History</span></div>
+    </button>
+    <button class="nav-tab" id="navProfile"  onclick="switchPage('profile')">
+      <div class="nav-pill-wrap"><i data-lucide="user"></i><span>Profile</span></div>
+    </button>
+  </nav>
+
+</div><!-- /app-shell -->
+
+<!-- ============================================================
+     SECTION: JavaScript
+     ============================================================ -->
+<script>
+/* ---------- STATE ---------- */
+let currentPage      = 'home';
+let currentLang      = localStorage.getItem('medai_language') || 'en';
+let authMode         = 'login';
+let selectedFile     = null;
+let selectedBase64   = null;
+let currentMedicines = [];
+
+/* ---------- BOOT ---------- */
+document.addEventListener('DOMContentLoaded', () => {
+  lucide.createIcons();
+  boot();
+});
+
+function boot() {
+  setGreeting();
+  loadApiKey();
+  updateLangUI();
+
+  const user = getUser();
+  if (user) {
+    closeModal();
+    syncProfileUI(user);
+  } else {
+    document.getElementById('authModal').style.display = 'flex';
+  }
+}
+
+/* ---------- GREETING ---------- */
+function setGreeting() {
+  const h    = new Date().getHours();
+  const time = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
+  const emoji = h < 12 ? '🌅' : h < 17 ? '☀️' : '🌙';
+  const user = getUser();
+  const name = user?.name || 'User';
+  document.getElementById('greetingText').textContent = `Good ${time}, ${name} ${emoji}`;
+}
+
+/* ---------- AUTH ---------- */
+function getUser() {
+  try { return JSON.parse(localStorage.getItem('medai_user')); } catch { return null; }
+}
+
+function closeModal() {
+  document.getElementById('authModal').style.display = 'none';
+}
+
+function switchAuthTab(mode) {
+  authMode = mode;
+  document.getElementById('tabLogin').classList.toggle('active', mode === 'login');
+  document.getElementById('tabSignup').classList.toggle('active', mode === 'signup');
+  document.getElementById('nameField').classList.toggle('hidden', mode === 'login');
+  document.getElementById('authCta').textContent = mode === 'login' ? 'Login' : 'Create Account';
+}
+
+function handleAuth(e) {
+  e.preventDefault();
+  const email = document.getElementById('inpEmail').value.trim();
+  const raw   = document.getElementById('inpName').value.trim();
+  const name  = raw || email.split('@')[0];
+  if (!email) return;
+  const user = { name, email };
+  localStorage.setItem('medai_user', JSON.stringify(user));
+  closeModal();
+  syncProfileUI(user);
+  setGreeting();
+}
+
+function syncProfileUI(user) {
+  document.getElementById('profileName').textContent  = user.name  || 'User';
+  document.getElementById('profileEmail').textContent = user.email || '—';
+  const cnt = getHistory().length;
+  document.getElementById('profileScanCount').innerHTML = `${cnt} scan${cnt !== 1 ? 's' : ''} <i data-lucide="chevron-right"></i>`;
+  lucide.createIcons();
+}
+
+function logout() {
+  if (!confirm('Log out of MedAI?')) return;
+  localStorage.removeItem('medai_user');
+  document.getElementById('inpEmail').value = '';
+  document.getElementById('inpPass').value  = '';
+  document.getElementById('inpName').value  = '';
+  document.getElementById('authModal').style.display = 'flex';
+}
+
+/* ---------- API KEY ---------- */
+function onApiKeyInput() {
+  const v = document.getElementById('apiKeyInput').value.trim();
+  if (v) localStorage.setItem('medai_apikey', v);
+}
+
+function loadApiKey() {
+  const k = localStorage.getItem('medai_apikey') || '';
+  document.getElementById('apiKeyInput').value = k;
+}
+
+function getApiKey() {
+  return localStorage.getItem('medai_apikey') || document.getElementById('apiKeyInput').value.trim();
+}
+
+/* ---------- DRAG & DROP ---------- */
+function onDragOver(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.add('drag-over');
+}
+function onDragLeave(e) {
+  document.getElementById('uploadZone').classList.remove('drag-over');
+}
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag-over');
+  const file = e.dataTransfer?.files?.[0];
+  if (file) processFile(file);
+}
+
+/* ---------- FILE UPLOAD ---------- */
+function handleFileUpload(e) {
+  const file = e.target.files?.[0];
+  if (file) processFile(file);
+}
+
+function processFile(file) {
+  const allowed = ['image/jpeg','image/png','image/gif','image/webp','application/pdf'];
+  if (!allowed.includes(file.type)) { alert('Please upload an image (JPG/PNG) or PDF.'); return; }
+  if (file.size > 10 * 1024 * 1024) { alert('File too large. Max 10MB.'); return; }
+
+  selectedFile = file;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    selectedBase64 = ev.target.result;
+    document.getElementById('previewImg').src = selectedBase64;
+    document.getElementById('previewWrap').classList.add('show');
+    document.getElementById('uploadZone').style.display = 'none';
+    document.getElementById('previewMeta').textContent = `${file.name} · ${(file.size/1024).toFixed(1)} KB`;
+    document.getElementById('analyzeBtn').disabled = false;
+    lucide.createIcons();
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeFile() {
+  selectedFile = null; selectedBase64 = null;
+  document.getElementById('previewWrap').classList.remove('show');
+  document.getElementById('uploadZone').style.display = '';
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('camInput').value  = '';
+}
+
+/* ---------- ANALYZE ---------- */
+async function analyzeImage() {
+  const apiKey = getApiKey();
+  if (!apiKey) { alert('Please enter your Anthropic API key first.'); return; }
+  if (!selectedBase64) return;
+
+  showPage('scan');
+
+  try {
+    const base64 = selectedBase64.split(',')[1];
+    const mime   = (selectedFile?.type === 'application/pdf') ? 'image/jpeg' : (selectedFile?.type || 'image/jpeg');
+
+    const prompt = currentLang === 'te'
+      ? `Analyze this prescription image. Return ONLY a valid JSON array with no markdown or extra text.
+Each object must have: { "name", "generic", "dosage", "timing", "uses", "side_effects", "warnings" }
+Keep name and generic in English. Translate timing, uses, side_effects, warnings to Telugu.
+If no medicines found, return: []`
+      : `Analyze this prescription image. Return ONLY a valid JSON array with no markdown or extra text.
+Each object must have: { "name", "generic", "dosage", "timing", "uses", "side_effects", "warnings" }
+warnings can be null if none. If no medicines found, return: []`;
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mime, data: base64 } },
+            { type: 'text',  text: prompt }
+          ]
+        }]
+      })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err?.error?.message || `HTTP ${resp.status}`);
+    }
+
+    const data    = await resp.json();
+    const rawText = data?.content?.[0]?.text || '[]';
+    const match   = rawText.match(/\[[\s\S]*\]/);
+    const meds    = match ? JSON.parse(match[0]) : [];
+
+    currentMedicines = meds;
+    saveToHistory({ id: Date.now(), date: new Date().toISOString(), imageBase64: selectedBase64, medicines: meds });
+    renderResults(meds);
+    switchPage('results');
+
+  } catch (err) {
+    renderError(String(err?.message || err));
+    switchPage('results');
+  }
+}
+
+/* ---------- RENDER RESULTS ---------- */
+function renderResults(meds) {
+  const el = document.getElementById('resultsContent');
+  if (!meds || meds.length === 0) {
+    el.innerHTML = buildErrorCard('No medicines found', 'Could not extract medicine data from this image. Try a clearer photo.', true);
+    lucide.createIcons(); return;
+  }
+
+  const te = currentLang === 'te';
+  let html = `<div class="success-banner">
+    <i data-lucide="check-circle-2"></i>
+    Analysis Complete — ${meds.length} medicine${meds.length !== 1 ? 's' : ''} found
+  </div>`;
+
+  for (const med of meds) {
+    html += `<div class="med-card">
+      <div class="med-top">
+        <div class="med-icon"><i data-lucide="pill"></i></div>
+        <div>
+          <div class="med-name">${esc(med.name)}</div>
+          <div class="med-generic">${esc(med.generic || '')}</div>
+        </div>
+      </div>
+      <div class="badges">
+        ${med.dosage ? `<span class="badge-dose">${esc(med.dosage)}</span>` : ''}
+        ${med.timing ? `<span class="badge-time">${esc(med.timing)}</span>` : ''}
+      </div>
+      ${med.uses ? `<div class="med-field"><div class="field-label">${te ? 'ఉపయోగాలు' : 'Uses'}</div><div class="field-value">${esc(med.uses)}</div></div>` : ''}
+      ${med.side_effects ? `<div class="med-field"><div class="field-label">${te ? 'దుష్ప్రభావాలు' : 'Side Effects'}</div><div class="field-value">${esc(med.side_effects)}</div></div>` : ''}
+      ${med.warnings ? `<div class="warn-box"><i data-lucide="alert-triangle"></i><span>${esc(med.warnings)}</span></div>` : ''}
+    </div>`;
+  }
+
+  el.innerHTML = html;
+  lucide.createIcons();
+}
+
+function renderError(msg) {
+  document.getElementById('resultsContent').innerHTML = buildErrorCard('Analysis failed', msg || 'An error occurred. Please try again.');
+  lucide.createIcons();
+}
+
+function buildErrorCard(title, msg, isScan) {
+  return `<div class="err-card">
+    <h4><i data-lucide="alert-circle"></i> ${esc(title)}</h4>
+    <p>${esc(msg)}</p>
+    <button class="retry-btn" onclick="${isScan ? 'startNewScan()' : 'analyzeImage()'}">${isScan ? 'Try Again' : 'Retry'}</button>
+  </div>`;
+}
+
+/* ---------- PAGE NAVIGATION ---------- */
+const PAGE_MAP = { home: 'pageHome', scan: 'pageScan', results: 'pageResults', history: 'pageHistory', profile: 'pageProfile' };
+const NAV_MAP  = { home: 'navHome', results: 'navResults', history: 'navHistory', profile: 'navProfile' };
+
+function switchPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const pg = document.getElementById(PAGE_MAP[name]);
+  if (pg) pg.classList.add('active');
+
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  const nb = document.getElementById(NAV_MAP[name]);
+  if (nb) nb.classList.add('active');
+
+  currentPage = name;
+  document.querySelector('.page-area').scrollTop = 0;
+
+  if (name === 'history') renderHistory();
+  if (name === 'profile') { const u = getUser(); if (u) syncProfileUI(u); }
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const pg = document.getElementById(PAGE_MAP[name]);
+  if (pg) pg.classList.add('active');
+  currentPage = name;
+}
+
+function startNewScan() { removeFile(); switchPage('home'); }
+function goHistory()    { switchPage('history'); }
+
+/* ---------- LANGUAGE TOGGLE ---------- */
+async function toggleLanguage() {
+  const btn  = document.getElementById('langBtn');
+  const next = currentLang === 'en' ? 'te' : 'en';
+  currentLang = next;
+  localStorage.setItem('medai_language', next);
+  updateLangUI();
+
+  if (currentPage === 'results' && currentMedicines.length > 0) {
+    const apiKey = getApiKey();
+    if (!apiKey) { renderResults(currentMedicines); return; }
+
+    btn.classList.add('loading');
+    try {
+      if (next === 'te') {
+        const translated = await translateToTelugu(currentMedicines, apiKey);
+        renderResults(translated);
+      } else {
+        renderResults(currentMedicines);
+      }
+    } catch { renderResults(currentMedicines); }
+    finally { btn.classList.remove('loading'); }
+  }
+}
+
+async function translateToTelugu(meds, apiKey) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1500,
+      messages: [{
+        role: 'user',
+        content: `Translate the following medicine details to Telugu language.
+Keep name and generic in English. Translate only: uses, side_effects, warnings, timing.
+Return same JSON array structure. Return ONLY the JSON array, no extra text.
+Input: ${JSON.stringify(meds)}`
+      }]
+    })
+  });
+  const d   = await r.json();
+  const raw = d?.content?.[0]?.text || '[]';
+  const m   = raw.match(/\[[\s\S]*\]/);
+  return m ? JSON.parse(m[0]) : meds;
+}
+
+function updateLangUI() {
+  document.getElementById('langLabel').textContent   = currentLang === 'en' ? 'EN' : 'తె';
+  const pl = document.getElementById('profileLang');
+  if (pl) pl.innerHTML = (currentLang === 'en' ? 'English' : 'Telugu') + ' <i data-lucide="chevron-right"></i>';
+  lucide.createIcons();
+}
+
+/* ---------- HISTORY ---------- */
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem('medai_history')) || []; } catch { return []; }
+}
+
+function saveToHistory(entry) {
+  const h = getHistory();
+  h.unshift(entry);
+  localStorage.setItem('medai_history', JSON.stringify(h.slice(0, 30)));
+}
+
+function renderHistory() {
+  const history = getHistory();
+  document.getElementById('histCount').textContent = `${history.length} scan${history.length !== 1 ? 's' : ''}`;
+
+  const list = document.getElementById('histList');
+  if (history.length === 0) {
+    list.innerHTML = `<div class="empty-state">
+      <i data-lucide="clock" style="width:60px;height:60px;"></i>
+      <h4>No scans yet</h4>
+      <p>Your previous prescriptions will appear here</p>
+    </div>`;
+    lucide.createIcons(); return;
+  }
+
+  list.innerHTML = history.map((item, i) => {
+    const d       = new Date(item.date);
+    const now     = new Date();
+    const today   = d.toDateString() === now.toDateString();
+    const timeStr = d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+    const dateStr = today ? `Today, ${timeStr}` : `${d.toLocaleDateString([], { month:'short', day:'numeric' })}, ${timeStr}`;
+    const cnt     = item.medicines?.length || 0;
+    const thumb   = item.imageBase64
+      ? `<img class="hist-thumb" src="${item.imageBase64}" alt="Prescription">`
+      : `<div class="hist-thumb-ph"><i data-lucide="file-image"></i></div>`;
+
+    return `<div class="hist-card" onclick="viewHistoryItem(${i})">
+      ${thumb}
+      <div class="hist-info">
+        <div class="hist-date">${dateStr}</div>
+        <div class="hist-meds">${cnt} medicine${cnt !== 1 ? 's' : ''}</div>
+      </div>
+      <button class="hist-del" onclick="deleteHistoryItem(event,${i})">
+        <i data-lucide="trash-2"></i>
+      </button>
+    </div>`;
+  }).join('');
+
+  lucide.createIcons();
+}
+
+function viewHistoryItem(i) {
+  const item = getHistory()[i];
+  if (!item) return;
+  currentMedicines = item.medicines || [];
+  renderResults(currentMedicines);
+  switchPage('results');
+}
+
+function deleteHistoryItem(e, i) {
+  e.stopPropagation();
+  const h = getHistory();
+  h.splice(i, 1);
+  localStorage.setItem('medai_history', JSON.stringify(h));
+  renderHistory();
+}
+
+function clearHistory() {
+  if (!confirm('Clear all scan history?')) return;
+  localStorage.removeItem('medai_history');
+  renderHistory();
+  const u = getUser(); if (u) syncProfileUI(u);
+}
+
+/* ---------- UTIL ---------- */
+function esc(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
