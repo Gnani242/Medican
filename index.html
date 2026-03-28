@@ -202,113 +202,7 @@ a       { text-decoration: none; }
 .nav-tab.active .nav-pill-wrap { background: var(--primary-light); }
 .nav-tab svg { width: 20px; height: 20px; }
 
-/* ============================================================
-   SECTION: Auth Modal (Login / Signup)
-   ============================================================ */
-.modal-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.5);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  display: flex;
-  align-items: flex-end;
-  z-index: 100;
-  border-radius: 32px;
-  overflow: hidden;
-}
-
-.modal-sheet {
-  width: 100%;
-  background: var(--surface);
-  border-radius: 28px 28px 32px 32px;
-  padding: 12px 20px 32px;
-  animation: sheetUp 300ms ease both;
-}
-
-@keyframes sheetUp {
-  from { transform: translateY(100%); }
-  to   { transform: translateY(0); }
-}
-
-.modal-drag-bar {
-  width: 40px; height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-  margin: 0 auto 20px;
-}
-
-.modal-icon {
-  width: 52px; height: 52px;
-  background: var(--primary-light);
-  border-radius: 14px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--primary);
-  margin: 0 auto 12px;
-}
-.modal-icon svg { width: 26px; height: 26px; }
-
-.modal-title { font-size: 20px; font-weight: 500; text-align: center; }
-.modal-sub   { font-size: 14px; color: var(--text-secondary); text-align: center; margin-bottom: 20px; }
-
-.tab-row {
-  display: flex;
-  gap: 4px;
-  background: var(--bg);
-  border-radius: var(--radius-sm);
-  padding: 4px;
-  margin-bottom: 20px;
-}
-.tab-btn {
-  flex: 1;
-  padding: 8px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  transition: all 0.2s;
-  text-align: center;
-}
-.tab-btn.active {
-  background: var(--surface);
-  color: var(--primary);
-  box-shadow: var(--shadow-sm);
-}
-
-.field { margin-bottom: 14px; }
-.field label {
-  display: block;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-bottom: 6px;
-}
-.field input {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-md);
-  font-size: 15px;
-  color: var(--text-primary);
-  background: var(--surface);
-  outline: none;
-  transition: border-color 0.2s;
-}
-.field input:focus { border-color: var(--primary); }
-
-.modal-cta {
-  width: 100%;
-  height: 50px;
-  background: var(--primary);
-  color: white;
-  border-radius: var(--radius-md);
-  font-size: 16px;
-  font-weight: 500;
-  transition: all 0.2s;
-  margin-top: 4px;
-}
-.modal-cta:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
-.modal-cta:active { transform: scale(0.97); }
+/* (Auth modal removed) */
 
 /* ============================================================
    SECTION: Home Page
@@ -317,35 +211,77 @@ a       { text-decoration: none; }
 .greeting h2 { font-size: 20px; font-weight: 500; }
 .greeting p  { font-size: 14px; color: var(--text-secondary); margin-top: 2px; }
 
-/* API Key Banner */
-.key-banner {
-  background: #FFF7ED;
-  border: 1px solid #FED7AA;
-  border-radius: var(--radius-md);
-  padding: 12px 14px;
+/* API Key Card */
+.key-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
   margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
 }
-.key-banner label {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  color: #92400E;
-  margin-bottom: 6px;
+.key-card.has-key {
+  border-color: #A7F3D0;
+  background: #F0FDF9;
+}
+.key-card-top {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
-.key-banner input {
-  width: 100%;
+.key-card-icon {
+  width: 34px; height: 34px;
+  background: var(--primary-light);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+.key-card-icon svg { width: 16px; height: 16px; }
+.key-card.has-key .key-card-icon { background: #DCFCE7; color: var(--success); }
+.key-card-title { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.key-card-sub   { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+.key-input-row {
+  display: flex;
+  gap: 8px;
+}
+.key-input-row input {
+  flex: 1;
   padding: 9px 12px;
-  border: 1px solid #FED7AA;
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
   font-size: 13px;
-  background: white;
   color: var(--text-primary);
+  background: white;
   outline: none;
+  transition: border-color 0.2s;
+  font-family: monospace;
 }
-.key-banner input:focus { border-color: var(--primary); }
+.key-input-row input:focus { border-color: var(--primary); }
+.key-save-btn {
+  padding: 9px 16px;
+  background: var(--primary);
+  color: white;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.key-save-btn:hover { background: var(--primary-dark); }
+.key-saved-badge {
+  display: none;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--success);
+  margin-top: 6px;
+  font-weight: 500;
+}
+.key-card.has-key .key-saved-badge { display: flex; }
+.key-saved-badge svg { width: 14px; height: 14px; }
 
 /* Upload Zone */
 .upload-zone {
@@ -792,36 +728,7 @@ a       { text-decoration: none; }
 <!-- SECTION: App Shell -->
 <div class="app-shell" id="appShell">
 
-  <!-- SECTION: Auth Modal -->
-  <div class="modal-overlay" id="authModal">
-    <div class="modal-sheet">
-      <div class="modal-drag-bar"></div>
-      <div class="modal-icon"><i data-lucide="pill"></i></div>
-      <p class="modal-title">Welcome to MedAI</p>
-      <p class="modal-sub">AI-powered prescription analysis</p>
-
-      <div class="tab-row">
-        <button class="tab-btn active" id="tabLogin"  onclick="switchAuthTab('login')">Login</button>
-        <button class="tab-btn"        id="tabSignup" onclick="switchAuthTab('signup')">Sign Up</button>
-      </div>
-
-      <form id="authForm" onsubmit="handleAuth(event)">
-        <div class="field hidden" id="nameField">
-          <label>Full Name</label>
-          <input type="text" id="inpName" placeholder="Your name">
-        </div>
-        <div class="field">
-          <label>Email</label>
-          <input type="email" id="inpEmail" placeholder="you@email.com" required>
-        </div>
-        <div class="field">
-          <label>Password</label>
-          <input type="password" id="inpPass" placeholder="••••••••" required>
-        </div>
-        <button type="submit" class="modal-cta" id="authCta">Login</button>
-      </form>
-    </div>
-  </div>
+  <!-- Auth modal removed -->
 
   <!-- SECTION: Top App Bar -->
   <header class="app-bar">
@@ -845,9 +752,23 @@ a       { text-decoration: none; }
         <p>Upload a prescription to get started</p>
       </div>
 
-      <div class="key-banner">
-        <label><i data-lucide="key" style="width:13px;height:13px;display:inline;"></i> Anthropic API Key</label>
-        <input type="password" id="apiKeyInput" placeholder="sk-ant-..." oninput="onApiKeyInput()">
+      <!-- API Key Card -->
+      <div class="key-card" id="keyCard">
+        <div class="key-card-top">
+          <div class="key-card-icon"><i data-lucide="key"></i></div>
+          <div>
+            <div class="key-card-title">Anthropic API Key</div>
+            <div class="key-card-sub">Required to analyze prescriptions</div>
+          </div>
+        </div>
+        <div class="key-input-row">
+          <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-...">
+          <button class="key-save-btn" onclick="saveApiKey()">Save</button>
+        </div>
+        <div class="key-saved-badge">
+          <i data-lucide="check-circle-2"></i>
+          API key saved — ready to analyze
+        </div>
       </div>
 
       <!-- Upload Zone (drag & drop) -->
@@ -1026,14 +947,7 @@ function boot() {
   setGreeting();
   loadApiKey();
   updateLangUI();
-
-  const user = getUser();
-  if (user) {
-    closeModal();
-    syncProfileUI(user);
-  } else {
-    document.getElementById('authModal').style.display = 'flex';
-  }
+  syncProfileUI();
 }
 
 /* ---------- GREETING ---------- */
@@ -1041,67 +955,38 @@ function setGreeting() {
   const h    = new Date().getHours();
   const time = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
   const emoji = h < 12 ? '🌅' : h < 17 ? '☀️' : '🌙';
-  const user = getUser();
-  const name = user?.name || 'User';
-  document.getElementById('greetingText').textContent = `Good ${time}, ${name} ${emoji}`;
+  document.getElementById('greetingText').textContent = `Good ${time} ${emoji}`;
 }
 
-/* ---------- AUTH ---------- */
-function getUser() {
-  try { return JSON.parse(localStorage.getItem('medai_user')); } catch { return null; }
-}
-
-function closeModal() {
-  document.getElementById('authModal').style.display = 'none';
-}
-
-function switchAuthTab(mode) {
-  authMode = mode;
-  document.getElementById('tabLogin').classList.toggle('active', mode === 'login');
-  document.getElementById('tabSignup').classList.toggle('active', mode === 'signup');
-  document.getElementById('nameField').classList.toggle('hidden', mode === 'login');
-  document.getElementById('authCta').textContent = mode === 'login' ? 'Login' : 'Create Account';
-}
-
-function handleAuth(e) {
-  e.preventDefault();
-  const email = document.getElementById('inpEmail').value.trim();
-  const raw   = document.getElementById('inpName').value.trim();
-  const name  = raw || email.split('@')[0];
-  if (!email) return;
-  const user = { name, email };
-  localStorage.setItem('medai_user', JSON.stringify(user));
-  closeModal();
-  syncProfileUI(user);
-  setGreeting();
-}
-
-function syncProfileUI(user) {
-  document.getElementById('profileName').textContent  = user.name  || 'User';
-  document.getElementById('profileEmail').textContent = user.email || '—';
+function syncProfileUI() {
   const cnt = getHistory().length;
-  document.getElementById('profileScanCount').innerHTML = `${cnt} scan${cnt !== 1 ? 's' : ''} <i data-lucide="chevron-right"></i>`;
+  const el  = document.getElementById('profileScanCount');
+  if (el) el.innerHTML = `${cnt} scan${cnt !== 1 ? 's' : ''} <i data-lucide="chevron-right"></i>`;
   lucide.createIcons();
 }
 
 function logout() {
-  if (!confirm('Log out of MedAI?')) return;
-  localStorage.removeItem('medai_user');
-  document.getElementById('inpEmail').value = '';
-  document.getElementById('inpPass').value  = '';
-  document.getElementById('inpName').value  = '';
-  document.getElementById('authModal').style.display = 'flex';
+  if (!confirm('Clear saved API key?')) return;
+  localStorage.removeItem('medai_apikey');
+  document.getElementById('apiKeyInput').value = '';
+  document.getElementById('keyCard').classList.remove('has-key');
+  lucide.createIcons();
 }
 
 /* ---------- API KEY ---------- */
-function onApiKeyInput() {
+function saveApiKey() {
   const v = document.getElementById('apiKeyInput').value.trim();
-  if (v) localStorage.setItem('medai_apikey', v);
+  if (!v) { alert('Please enter your Anthropic API key first.'); return; }
+  localStorage.setItem('medai_apikey', v);
+  document.getElementById('keyCard').classList.add('has-key');
+  lucide.createIcons();
 }
 
 function loadApiKey() {
   const k = localStorage.getItem('medai_apikey') || '';
   document.getElementById('apiKeyInput').value = k;
+  if (k) document.getElementById('keyCard').classList.add('has-key');
+  lucide.createIcons();
 }
 
 function getApiKey() {
@@ -1187,7 +1072,7 @@ warnings can be null if none. If no medicines found, return: []`;
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-3-5-sonnet-20241022',
         max_tokens: 1500,
         messages: [{
           role: 'user',
@@ -1200,8 +1085,12 @@ warnings can be null if none. If no medicines found, return: []`;
     });
 
     if (!resp.ok) {
-      const err = await resp.json().catch(() => ({}));
-      throw new Error(err?.error?.message || `HTTP ${resp.status}`);
+      const errBody = await resp.json().catch(() => ({}));
+      const errMsg  = errBody?.error?.message || '';
+      if (resp.status === 401) {
+        throw new Error('__AUTH__');
+      }
+      throw new Error(errMsg || `API error (HTTP ${resp.status})`);
     }
 
     const data    = await resp.json();
@@ -1215,7 +1104,8 @@ warnings can be null if none. If no medicines found, return: []`;
     switchPage('results');
 
   } catch (err) {
-    renderError(String(err?.message || err));
+    const msg = String(err?.message || err);
+    renderError(msg);
     switchPage('results');
   }
 }
@@ -1258,16 +1148,26 @@ function renderResults(meds) {
 }
 
 function renderError(msg) {
-  document.getElementById('resultsContent').innerHTML = buildErrorCard('Analysis failed', msg || 'An error occurred. Please try again.');
-  lucide.createIcons();
-}
+  const isAuth = msg === '__AUTH__';
+  const title  = isAuth ? '❌ Invalid API Key (HTTP 401)' : 'Analysis failed';
+  const body   = isAuth
+    ? 'Your API key was rejected. Make sure you copied it correctly from console.anthropic.com/settings/keys'
+    : (msg || 'An unknown error occurred. Please try again.');
+  const actions = isAuth
+    ? `<a href="https://console.anthropic.com/settings/keys" target="_blank"
+         style="display:inline-block;padding:8px 18px;background:var(--primary);color:white;border-radius:var(--radius-sm);font-size:14px;font-weight:500;text-decoration:none;">
+         Get API Key
+       </a>
+       <button class="retry-btn" style="background:var(--text-secondary);" onclick="switchPage('home')">Fix Key</button>`
+    : `<button class="retry-btn" onclick="analyzeImage()">Retry</button>`;
 
-function buildErrorCard(title, msg, isScan) {
-  return `<div class="err-card">
-    <h4><i data-lucide="alert-circle"></i> ${esc(title)}</h4>
-    <p>${esc(msg)}</p>
-    <button class="retry-btn" onclick="${isScan ? 'startNewScan()' : 'analyzeImage()'}">${isScan ? 'Try Again' : 'Retry'}</button>
-  </div>`;
+  document.getElementById('resultsContent').innerHTML = `
+    <div class="err-card">
+      <h4><i data-lucide="alert-circle"></i> ${esc(title)}</h4>
+      <p>${esc(body)}</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">${actions}</div>
+    </div>`;
+  lucide.createIcons();
 }
 
 /* ---------- PAGE NAVIGATION ---------- */
@@ -1335,7 +1235,7 @@ async function translateToTelugu(meds, apiKey) {
       'anthropic-dangerous-direct-browser-access': 'true'
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-3-5-sonnet-20241022',
       max_tokens: 1500,
       messages: [{
         role: 'user',
